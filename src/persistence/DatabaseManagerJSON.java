@@ -350,8 +350,8 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	}
 
 	@Override
-	public void insertReading(String sensorId, String timestamp, String description, String signalStrength,
-			String value) {
+	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength,
+			String value, String arrived_to_DTSM) {
 		// TODO Auto-generated method stub
 		// NOT STORED IN LOCAL JSON DB
 	}

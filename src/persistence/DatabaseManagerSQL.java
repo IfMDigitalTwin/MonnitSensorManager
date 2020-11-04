@@ -244,9 +244,9 @@ public class DatabaseManagerSQL implements iDatabaseManager{
 		GUIListenerFunctions.print("Sensor " + sensorId + " removed.");
 	}
 	
-	public void insertReading(String sensorId, String timestamp, String description, String signalStrength, String value) {
-		String [] colarray = {"SensorId", "Timestamp", "Description", "SignalStrength", "Value"};
-		String [] valarray = {sensorId, timestamp, description, signalStrength, value};
+	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength, String value, String arrived_to_DTSM) {
+		String [] colarray = {"SensorId", "Timestamp", "Description", "SignalStrength", "Value", "Arrived2DTSM"};
+		String [] valarray = {sensorId, msgtimestamp, description, signalStrength, value, arrived_to_DTSM};
 		List<String> columns = Arrays.asList(colarray);
 		List<String> values = Arrays.asList(valarray);
 		

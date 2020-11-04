@@ -37,7 +37,7 @@ public interface iDatabaseManager {
 	
 	public void deleteSensor(String sensorId);
 	
-	public void insertReading(String sensorId, String timestamp, String description, String signalStrength, String value);
+	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength, String value, String arrived_to_DTSM);
 
 	public long getLocationId(String locationName) ;
 

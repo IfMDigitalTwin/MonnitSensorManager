@@ -5,6 +5,9 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.Array;
 
 import javax.swing.*;
+
+import persistence.DataPlatformManager;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,7 +15,8 @@ import java.util.List;
 
 public class MainWindow {
 
-    public static JFrame frame;
+    private static final int FEED_MAX_SIZE = 40;
+	public static JFrame frame;
     public static JPanel panel; //Only thing directly inside the frame
     
     public static JPanel northPanel;
@@ -24,6 +28,8 @@ public class MainWindow {
     public static String[] protocols;
     public static JLabel portLabel;
     public static JTextField portField;
+    public static JLabel topicLabel;
+    public static JTextField topicField;
     public static JButton startListenButton;
     public static JButton clearButton;
     
@@ -60,16 +66,19 @@ public class MainWindow {
     public static JButton findSensorButton;
     public static JButton removeSensorButton;
     
+    public static JButton fakeReadingButton;
+    
+    
     
     public static JScrollPane outputScroll;
     public static JTextArea outputArea;
     public static GridBagConstraints constraints;
 
-    public static String version = "0.1";
+    public static String version = "1.1";
     
-    public static void create(List<Integer> options) {
+    private static void create(List<Integer> options) {
         try {
-            frame = new JFrame("Sensor Manager " + version);
+            frame = new JFrame("Monnit Sensor Manager " + version);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
             //initializing early to prevent printing exceptions
@@ -89,6 +98,7 @@ public class MainWindow {
             
             outputArea.setEditable(false);
             outputArea.setLineWrap(true);
+            
             outputScroll = new JScrollPane(outputArea);
             constraints.gridx = 0;
             constraints.gridy = 10;
@@ -100,6 +110,10 @@ public class MainWindow {
             panel.add(outputScroll, constraints);
             //outputScroll.setPreferredSize(outputAreaDimension);
             //panel.add(outputScroll);
+            
+            resetConstraints();
+            //createFakeReadingButton();
+            
             frame.pack();
             frame.setVisible(true);
         } catch (Exception ex) {
@@ -107,6 +121,23 @@ public class MainWindow {
         }
     }
 
+    
+    private static void createFakeReadingButton() {
+    	fakeReadingButton = new JButton("Fake Reading");            
+        fakeReadingButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GUIListenerFunctions.fakeReading();
+            }
+        });
+        constraints.gridx = 0;
+        constraints.gridy = 11;
+        constraints.gridwidth = 2;
+        constraints.gridheight = 2;
+        constraints.insets = new Insets(10, 10, 10, 10);
+        panel.add(fakeReadingButton, constraints);
+    }
+    
    	private static void createNorth() {
         try {
         	northPanel = new JPanel(new GridBagLayout());
@@ -153,32 +184,50 @@ public class MainWindow {
             constraints.insets = new Insets(0, 10, 10, 10);
             northPanel.add(protocolDropdown, constraints);
 
-            portLabel = new JLabel("Port");
-            constraints.gridx = 4;
-            constraints.gridy = 0;
-            constraints.gridwidth = 1;
+            portLabel = new JLabel("Monnit Port");
+            constraints.gridx = 0;
+            constraints.gridy = 2;
+            constraints.gridwidth = 2;
             constraints.insets = new Insets(10, 10, 0, 10);
             northPanel.add(portLabel, constraints);
             
             portField = new JTextField("3000");
-            constraints.gridx = 4;
-            constraints.gridy = 1;
+            constraints.gridx = 0;
+            constraints.gridy = 3;
             constraints.gridwidth = 2;
             constraints.insets = new Insets(0, 10, 10, 10);
             northPanel.add(portField, constraints);
+            
+            topicLabel = new JLabel("MQTT Topic Prefix");
+            constraints.gridx = 4;
+            constraints.gridy = 2;
+            constraints.gridwidth = 4;
+            constraints.insets = new Insets(10, 10, 0, 10);
+            northPanel.add(topicLabel, constraints);
+            
+            topicField = new JTextField(DataPlatformManager.MQTT_TOPIC);
+            constraints.gridx = 4;
+            constraints.gridy = 3;
+            constraints.gridwidth = 6;
+            constraints.insets = new Insets(0, 10, 10, 10);
+            northPanel.add(topicField, constraints);
 
-            startListenButton = new JButton("Start Listening");            
+            startListenButton = new JButton("Start");            
             startListenButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        GUIListenerFunctions.startButtonPressed();
+                    	if(GUIListenerFunctions.isMonnitServerStarted())
+                    		GUIListenerFunctions.stopButtonPressed();
+                    	else GUIListenerFunctions.startButtonPressed();
                     } catch (Exception e1) {
-                        GUIListenerFunctions.print(e1.toString());
+                    	if(GUIListenerFunctions.isMonnitServerStarted())  GUIListenerFunctions.print("Something wrong while stopping the server");
+                    	else GUIListenerFunctions.print("Something wrong while starting the server");
+                    	e1.printStackTrace();
                     }
                 }
             });
-            constraints.gridx = 6;
+            constraints.gridx = 4;
             constraints.gridy = 0;
             constraints.gridwidth = 2;
             constraints.gridheight = 2;
@@ -190,10 +239,9 @@ public class MainWindow {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     clearOutput();
-                    GUIListenerFunctions.fakeReading();
                 }
             });
-            constraints.gridx = 8;
+            constraints.gridx = 6;
             constraints.gridy = 0;
             constraints.gridwidth = 2;
             constraints.gridheight = 2;
@@ -565,8 +613,14 @@ public class MainWindow {
     }
 
     public static void println(String s) {
-        String data = outputArea.getText();
-        data = s + "\n" + data;
+        String [] data_array = outputArea.getText().split("\n");
+        String data="";
+        for(int i=1; i < Math.min(data_array.length, FEED_MAX_SIZE) ; i++) {
+        	// data = data_array[data_array.length-i] + "\n" + data; //reverse
+        	data += "\n" + data_array[data_array.length-i];
+        }
+    	data = data + "\n" + s;
+    	// data = s + "\n" + data; //reverse
         outputArea.setText(data);
     }
 
@@ -591,8 +645,8 @@ public class MainWindow {
     				break;
 				default:
 					GUIListenerFunctions.print("Wrong option: Available options --clientMode, --serverMode, --encrypted");
-					GUIListenerFunctions.print("Running with: Server Mode and Unencrypted connection");
-					options.add(GUIListenerFunctions.MQTT_SERVER_MODE);
+					GUIListenerFunctions.print("Running with: Client Mode and Unencrypted connection");
+					options.add(GUIListenerFunctions.MQTT_CLIENT_MODE);
 					options.add(GUIListenerFunctions.MQTT_UNENCRYPTED);
     				break;
     			}
@@ -601,8 +655,6 @@ public class MainWindow {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-            	
-            	
                 try {
                     create(options);
                 } catch (Exception ex) {
@@ -611,4 +663,5 @@ public class MainWindow {
             }
         });
     }
+
 }

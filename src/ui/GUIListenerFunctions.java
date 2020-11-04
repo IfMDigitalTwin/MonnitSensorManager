@@ -1,9 +1,11 @@
 package ui;
 
 import java.net.*;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -27,6 +29,8 @@ import monnit.UnknownGatewayHandler;
 import monnit.exceptions.ExceptionHandler;
 import persistence.DataPlatformManager;
 import persistence.DatabaseManager;
+import persistence.DatabaseManagerSQL;
+import persistence.iDatabaseManager;
 
 public class GUIListenerFunctions {
 	public static int MQTT_SERVER_MODE = 0;
@@ -36,8 +40,11 @@ public class GUIListenerFunctions {
     private static MineServer _Server;
     private static ExternalDeviceStorageHandler _DataAccess;
     private static List<String> myIps;
-    private static DatabaseManager _dbManager;
+    private static iDatabaseManager _dbManager;
     private static DataPlatformManager _dataPlatformManager;
+    private static boolean serverMode;
+    private static boolean encrypted;
+    private static boolean MonnitServerStarted;
 
     public static synchronized void print(String s) {
         MainWindow.println(s);
@@ -46,6 +53,20 @@ public class GUIListenerFunctions {
     
     public static void OnLoad(List<Integer> options)
     {
+    	MonnitServerStarted = false;
+    	_dbManager = new DatabaseManager(iDatabaseManager.DB_JSON);
+    	
+    	serverMode = false;
+        encrypted = false;
+        for(int s: options) {
+        	if(s==MQTT_SERVER_MODE) serverMode=true;
+        	if(s==MQTT_CLIENT_MODE) serverMode=false;
+        	if(s==MQTT_ENCRYPTED) encrypted=true;
+        	if(s==MQTT_UNENCRYPTED) encrypted=false;
+        }
+        //_dataPlatformManager = new DataPlatformManager(serverMode, encrypted); //--NOW LOADED at OnLoad().
+    	
+        
         //loadIPAddresses();
         loadIPAddressesForAllAdapters();
         MainWindow.protocols = new String [eMineListenerProtocol.values().length];
@@ -68,20 +89,19 @@ public class GUIListenerFunctions {
         	MainWindow.sensorGens[g] = eFirmwareGeneration.values()[g].name();
         Arrays.sort(MainWindow.sensorGens);
         
-        MainWindow.locations = new String[]{"DIAL", "Lecture Theatre 1", "Lecture Theatre 2", "Seminar Room 1", "Seminar Room 2", "Seminar Room 3", "Meeting Room 1", "Meeting Room 2", "Meeting Room 3", "Meeting Room 4", "Meeting Room 5", "Robot Lab", "Workshop", "Electric Workshop", "Computer Lab", "3D Printing Lab", "Plant Room"};
-        Arrays.sort(MainWindow.locations);
-        MainWindow.objects = new String[]{"Environment", "Radiator", "Window", "Pump 1", "Pump 2", "Boiler", "Pump Robotic Arm 1", "Pump Robotic Arm 2", "Pump Robotic Arm 3", "Pump Robotic Arm 4", "Pump Robotic Arm 5"};
-        Arrays.sort(MainWindow.objects);
         
-        _dbManager = new DatabaseManager ();
-        boolean serverMode = false, encrypted = false;
-        for(int s: options) {
-        	if(s==MQTT_SERVER_MODE) serverMode=true;
-        	if(s==MQTT_CLIENT_MODE) serverMode=false;
-        	if(s==MQTT_ENCRYPTED) encrypted=true;
-        	if(s==MQTT_UNENCRYPTED) encrypted=false;
+       try{
+        	MainWindow.locations = _dbManager.getAllLocationsName().toArray(new String[0]);
+        }catch(Exception e) {
+        	MainWindow.locations = new String[]{"DIAL", "Lecture Theatre 1", "Lecture Theatre 2", "Seminar Room 1", "Seminar Room 2", "Seminar Room 3", "Meeting Room 1", "Meeting Room 2", "Meeting Room 3", "Meeting Room 4", "Meeting Room 5", "Robot Lab", "Workshop", "Electric Workshop", "Computer Lab", "3D Printing Lab", "Plant Room"};
         }
-        _dataPlatformManager = new DataPlatformManager(serverMode, encrypted);
+        Arrays.sort(MainWindow.locations);
+        try{
+        	MainWindow.objects = _dbManager.getAllObjectsName().toArray(new String[0]);
+        }catch(Exception e) {
+        	MainWindow.objects = new String[]{"Environment", "Radiator", "Window", "Pump 1", "Pump 2", "Boiler", "Pump Robotic Arm 1", "Pump Robotic Arm 2", "Pump Robotic Arm 3", "Pump Robotic Arm 4", "Pump Robotic Arm 5"};
+        }
+        Arrays.sort(MainWindow.objects);
     }
     
     public static List<String> getIPAddresses() {
@@ -133,7 +153,11 @@ public class GUIListenerFunctions {
     
 
     public static void startButtonPressed() throws Exception {
-        int port = getPort();
+        if(MonnitServerStarted) {
+        	MainWindow.println("------> Monnit Server is already running!");
+        	return;
+        }
+    	int port = getPort();
         if (port < 1) {
             MainWindow.println("Invalid Port Number.");
             return;
@@ -149,12 +173,13 @@ public class GUIListenerFunctions {
         InetAddress ip = InetAddress.getByName(MainWindow.ipDropdown.getSelectedItem().toString());
         //stringToByteIP(gui.ipDropdown.getSelectedItem().toString()));
 
+        _dataPlatformManager = new DataPlatformManager(serverMode, encrypted);
         _DataAccess = new ExternalDeviceStorageHandler(_dbManager, _dataPlatformManager);
         _Server = new MineServer(Protocol, ip, port);
-        print("Constructed Server: " + _Server);
+ 
         _Server.StartServer();
-        print("Server started.");
-       
+        print("========================[  SERVER STARTED  ]========================");
+        print("Constructed Server (" + _Server + "). Monnit version: " + MineServer.getVersion());
 
         if (_Server.addGatewayDataProcessingHandler(new GatewayMessageHandler())) {
             print("Added GatewayHandler.");
@@ -191,8 +216,36 @@ public class GUIListenerFunctions {
         ResponseHandler responseHandler = new ResponseHandler();
         _Server.addGatewayResponseHandler(responseHandler);
 
+        
+        List<Gateway> registeredGateways = _dbManager.getAllGateways();
+        for (Gateway gw : registeredGateways) {
+        	registerGateway (gw.getGatewayID(), gw.getGatewayType().toString());
+        	List<Sensor> registeredSensors = _dbManager.getGatewaySensors(""+gw.getGatewayID());
+            for (Sensor s : registeredSensors) {
+            	registerSensor(s.getSensorID(), s.getFirmwareVersion(), s.getMonnitApplication().toString(), gw.getGatewayID());
+            }
+        }
+                
         print("Finished all inits");
-        print(MineServer.getVersion());
+        MonnitServerStarted = true;
+        MainWindow.startListenButton.setText("Stop");
+        getTopicPrefix();
+    }
+    
+    public static void stopButtonPressed() throws Exception {
+        if(!MonnitServerStarted) {
+        	MainWindow.println("------> Monnit Server is NOT running!");
+        	return;
+        }
+        if(_Server!=null) {
+        	_Server.StopServer();
+        }
+        if(_dataPlatformManager!=null) {
+        	_dataPlatformManager.stop();
+        }
+        MonnitServerStarted = false;
+        MainWindow.startListenButton.setText("Start");
+        print("========================[  SERVER STOPPED  ]========================");
     }
 
     private static int getPort() {
@@ -219,12 +272,16 @@ public class GUIListenerFunctions {
 	
 
 	public static void registerGatewayButtonPressed() throws Exception {
-		Integer GatewayID = ValidateGateway();
-        if (GatewayID > 0){
+		long GatewayID = ValidateGateway();
+		String GatewayType = MainWindow.gatewayTypeDropdown.getSelectedItem().toString();
+		registerGateway(GatewayID, GatewayType);
+	}
+	
+	public static void registerGateway(long GatewayID, String Type) {
+		if (GatewayID > 0){
             try{
-                eGatewayType GatewayType;
-                GatewayType = eGatewayType.valueOf(MainWindow.gatewayTypeDropdown.getSelectedItem().toString());
-
+                eGatewayType GatewayType = eGatewayType.valueOf(Type);
+                
 				// The values are just example values, be sure to change them according to what you need
                 Gateway MineGateway = new Gateway(GatewayID, GatewayType, "3.3.1.5", "2.5.2.1", "127.0.0.1", getPort());
                 /*
@@ -236,14 +293,15 @@ public class GUIListenerFunctions {
                 */
                 _Server.RegisterGateway(MineGateway);
                 print("GatewayID " + GatewayID + " has been registered");
-                //_dbManager.insertGateway(GatewayID.toString(), _dbManager.getLocationId((String) MainWindow.gatewayLocationDropdown.getSelectedItem()), GatewayType.toString());
+                _dbManager.insertGateway(""+GatewayID, _dbManager.getLocationId((String) MainWindow.gatewayLocationDropdown.getSelectedItem()), GatewayType.toString());
             } catch(Exception ex) {
                 print("Problem registering the gateway: " + ex.getMessage());
             }
-        }
+		}
+		
 	}
 	
-	private static Integer ValidateGateway()
+	private static long ValidateGateway()
     {
         if (_Server == null)
         {
@@ -251,9 +309,9 @@ public class GUIListenerFunctions {
             return 0;
         }
 
-        Integer GatewayID;
+        long GatewayID;
         try{
-        	GatewayID = Integer.parseInt(MainWindow.gatewayIDField.getText());
+        	GatewayID = Long.parseLong(MainWindow.gatewayIDField.getText());
         }catch(Exception e)
         {
             MainWindow.println("Invalid GatewayID");
@@ -270,7 +328,7 @@ public class GUIListenerFunctions {
 		gatewayForm = new GatewayWindow(new Gateway(1234, eGatewayType.Ethernet_3_0, "3.3.1.5", "2.5.2.1", "127.0.0.1", getPort()));
         gatewayForm.show();
         */
-		Integer GatewayID = ValidateGateway();
+		long GatewayID = ValidateGateway();
         if (GatewayID > 0)
         {
             Gateway GatewayObj = _Server.FindGateway(GatewayID);
@@ -285,7 +343,7 @@ public class GUIListenerFunctions {
 	}
 	
 	public static void removeGatewayButtonPressed() throws Exception {
-		Integer GatewayID = ValidateGateway();
+		long GatewayID = ValidateGateway();
         if (GatewayID > 0)
         {
             if (_Server.FindGateway(GatewayID) == null)
@@ -296,14 +354,14 @@ public class GUIListenerFunctions {
             {
                 _Server.RemoveGateway(GatewayID);
                 print("GatewayID " + GatewayID + " has been removed");
-                //_dbManager.deleteGateway(GatewayID.toString());
+                _dbManager.deleteGateway(""+GatewayID);
             }
         }
 		
 	}
 	
 	public static void reformGatewayButtonPressed() throws Exception {
-		Integer GatewayID = ValidateGateway();
+		long GatewayID = ValidateGateway();
         if (GatewayID > 0)
 		{
 			Gateway GatewayObj = _Server.FindGateway(GatewayID);
@@ -320,7 +378,7 @@ public class GUIListenerFunctions {
 	}
 	
 	public static void point2iMonnitGatewayButtonPressed() throws Exception {
-		Integer GatewayID = ValidateGateway();
+		long GatewayID = ValidateGateway();
         if (GatewayID > 0)
 		{
 			Gateway GatewayObj = _Server.FindGateway(GatewayID);
@@ -341,43 +399,43 @@ public class GUIListenerFunctions {
 
 	public static void registerSensorButtonPressed() throws Exception {
 		Integer SensorID = ValidateSensor();
-        Integer GatewayID = ValidateGateway();
-        if (SensorID > 0)
-        {
-            try
-            {
-				String generation = MainWindow.sensorGenDropdown.getSelectedItem().toString();
+        long GatewayID = ValidateGateway();
+        String generation = MainWindow.sensorGenDropdown.getSelectedItem().toString();
+        String application = MainWindow.sensorAppDropdown.getSelectedItem().toString();
+        registerSensor (SensorID, generation, application, GatewayID);
+	}
+	
+	public static void registerSensor (long SensorID, String generation, String application, long GatewayID) {
+		 if (SensorID > 0){
+			 try{
 				eFirmwareGeneration firmwaregen;
-				switch (generation)
-				{
-					case "Alta":
-						firmwaregen = eFirmwareGeneration.Alta;
-						break;
-					case "Wifi":
-						firmwaregen = eFirmwareGeneration.Wifi;
-						break;
-					case "Commercial":
-						firmwaregen = eFirmwareGeneration.Commercial;
-						break;
-					default:
-						firmwaregen = eFirmwareGeneration.Commercial;
-						break;
+				switch (generation){
+				case "Alta":
+					firmwaregen = eFirmwareGeneration.Alta;
+					break;
+				case "Wifi":
+					firmwaregen = eFirmwareGeneration.Wifi;
+					break;
+				case "Commercial":
+					firmwaregen = eFirmwareGeneration.Commercial;
+					break;
+				default:
+					firmwaregen = eFirmwareGeneration.Commercial;
+					break;
 				}
-
-                eSensorApplication SensorApplication;
-                SensorApplication = eSensorApplication.valueOf(MainWindow.sensorAppDropdown.getSelectedItem().toString());
-                
-                Sensor MineSensor = new Sensor(SensorID, SensorApplication, "2.3.0.0", firmwaregen);
-                _Server.RegisterSensor(GatewayID, MineSensor);
-                print("SensorID " + SensorID + " has been registered");
-
-                //_dbManager.insertSensor(SensorID.toString(), SensorApplication.toString(), GatewayID, _dbManager.getObjectId((String) MainWindow.sensorLocationDropdown.getSelectedItem()), _dbManager.getObjectId((String) MainWindow.objectDropdown.getSelectedItem()), getUnitForSensorApp(SensorApplication));
-            }
-            catch(Exception ex)
-            {
-                print("Sensor registering failed: " + ex.getMessage());
-            }
-        }
+				
+				eSensorApplication SensorApplication;
+				SensorApplication = eSensorApplication.valueOf(application);
+				
+				Sensor MineSensor = new Sensor(SensorID, SensorApplication, "2.3.0.0", firmwaregen);
+				_Server.RegisterSensor(GatewayID, MineSensor);
+				print("SensorID " + SensorID + " has been registered to Gateway " + GatewayID);
+				
+				_dbManager.insertSensor(""+SensorID, SensorApplication.toString(), ""+GatewayID, _dbManager.getObjectId((String) MainWindow.sensorLocationDropdown.getSelectedItem()), _dbManager.getObjectId((String) MainWindow.objectDropdown.getSelectedItem()), getUnitForSensorApp(SensorApplication));
+			 } catch(Exception ex) {
+				 print("Sensor registering failed: " + ex.getMessage());
+	         }
+		 }
 	}
 	
 	private static String getUnitForSensorApp(eSensorApplication sensorApplication) {
@@ -461,24 +519,33 @@ public class GUIListenerFunctions {
 	}
 	
 	public static void insertReadings (List<SensorMessage> sensorMessageList) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String date = "";
 		for (SensorMessage msg : sensorMessageList) {
             Sensor sens = null;
 			try {
 				sens = FindSensorBySensorID(msg.SensorID);
 				msg.ProfileID = sens.MonnitApplication.Value();
-			} catch (InterruptedException | NullPointerException e) {
+				Calendar msgcal = msg.getMessageDate();
+				//date = sdf.format(cal.getTime());
+				//Timestamp ts = new Timestamp(msgcal.getTimeInMillis());
+				//date = ts.toInstant().toString();
+				date = msg.getMessageDate().toInstant().toString();
+			} catch (InterruptedException | NullPointerException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
+				System.err.println("---======== Something wrong with: "+ msg.toString() + " -> ");
 				e.printStackTrace();
 			}
             GUIListenerFunctions.print(msg.toString());
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Calendar calendarDTSM = Calendar.getInstance();
+    		//String datetimeDTSM = sdf.format(calendarDTSM.getTime());
+    		Timestamp tsDTSM = new Timestamp(calendarDTSM.getTimeInMillis());
+    		String arrived_to_DTSM = tsDTSM.toInstant().toString();
             for(Datum d: msg.getData()) {
-            	_dbManager.insertReading(sdf.format(msg.MessageDate), d.Description.toString(), ""+msg.SensorID, ""+msg.getSignalStrength(), d.Data.toString());
+            	_dbManager.insertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), d.Data.toString(), arrived_to_DTSM);
             	// Reroutes the message to the Real-Time Data Platform in the DIAL Server.
-            	_dataPlatformManager.InsertReading(sdf.format(msg.MessageDate), d.Description.toString(), ""+msg.SensorID, ""+msg.getSignalStrength(), d.Data.toString());
+            	_dataPlatformManager.InsertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), d.Data.toString(), arrived_to_DTSM);
             }
-                        
-            
 		}
 	}
 	
@@ -490,4 +557,13 @@ public class GUIListenerFunctions {
 		_dataPlatformManager.fakeReading("TEST_VALUE_FROM_GUI");
 	}
 
+	public static boolean isMonnitServerStarted() {
+		return MonnitServerStarted;
+	}
+	
+	public static String getTopicPrefix() {
+		String topic = MainWindow.topicField.getText();
+		if(!topic.startsWith("csn/")) topic = "csn/"+topic;
+		return DataPlatformManager.topicValidation(topic);
+	}
 }

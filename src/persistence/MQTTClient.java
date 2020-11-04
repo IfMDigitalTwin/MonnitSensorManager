@@ -4,42 +4,45 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.VertxImpl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
 import ui.GUIListenerFunctions;
 
 public class MQTTClient /*extends AbstractVerticle */{
-    JsonObject config; // JSON config object given in instantiation
-    String FEED_ID;    // which is checked and parsed into these values
-    String USERNAME;
-    String PASSWORD;
-    Integer PORT;
-    String HOST;
-    String TOPIC;
+    private JsonObject config; // JSON config object given in instantiation
+    private String FEED_ID;    // which is checked and parsed into these values
+    private String USERNAME;
+    private String PASSWORD;
+    private Integer PORT;
+    private String HOST;
+    private String TOPIC;
 
-    MqttClient client = null; // MqttFeed object will be null if config bad
+    private MqttClient client = null; // MqttFeed object will be null if config bad
 
-    boolean watchdog_running = false; // set 'true' to avoid multiple instances
+    private boolean watchdog_running = false; // set 'true' to avoid multiple instances
 
-    long watchdog_timer; // id of timer - so we can reset to longer interval
+    private long watchdog_timer; // id of timer - so we can reset to longer interval
 
-    long watchdog_count = 0;
+    private long watchdog_count = 0;
 
-    int watchdog_period = 10000; // time (s) between status checks
+    private int watchdog_period = 10000; // time (s) between status checks
 
-    int WATCHDOG_MAX = 10; // when disconnected, check WATCHDOG_MAX times before doubling period
+    private int WATCHDOG_MAX = 10; // when disconnected, check WATCHDOG_MAX times before doubling period
 
+    private Vertx myvertx;
+    
     public MQTTClient() {
 
         MqttClientOptions client_options = new MqttClientOptions();
-
+        
         USERNAME = "dtsensormanager";
         PASSWORD = "dtsensormanager";
         FEED_ID = "DTSensorManager";
-        PORT = 1883;
-        HOST = "localhost";
-        TOPIC = "csn/pi-monnit/sensors/default";
+        PORT = DataPlatformManager.unencrypted_port;
+        HOST = DataPlatformManager.MQTT_HOST;
+        TOPIC = DataPlatformManager.MQTT_TOPIC;
 
         client_options.setPassword(PASSWORD);
         client_options.setUsername(USERNAME);
@@ -54,7 +57,8 @@ public class MQTTClient /*extends AbstractVerticle */{
         // *********************************
         // NOW CREATE THE VERTX MQTT CLIENT
         // *********************************
-        client = MqttClient.create(Vertx.vertx(), client_options);
+    	myvertx = Vertx.vertx();
+        client = MqttClient.create(myvertx, client_options);
 
         // catch exceptions buried in netty
         client.exceptionHandler( e -> {
@@ -157,7 +161,14 @@ public class MQTTClient /*extends AbstractVerticle */{
             System.out.println(FEED_ID+": MQTT starting watchdog");
 
             // send periodic "system_status" messages
-            watchdog_timer = Vertx.vertx().setPeriodic(period, id -> { watchdog();  });
+            watchdog_timer = myvertx.setPeriodic(period, id -> { 
+            	if(watchdog_running)
+            		watchdog(); 
+            	else {
+            		System.out.println("Stopping watchdog");
+            		myvertx.cancelTimer(id);
+            		}
+            	});
         }
     }
 
@@ -186,6 +197,11 @@ public class MQTTClient /*extends AbstractVerticle */{
         }
     }
     
+    private void stop_watchdog() {
+    	watchdog_timer=-1;
+    	watchdog_running = false;
+    }
+    
     public void publish (String topic, String message) {
     	if(client.isConnected()) {
         	client.publish(topic, Buffer.buffer(message), MqttQoS.AT_MOST_ONCE, false, false, s -> System.out.println("Publish "+ s + ", sent to a server"));
@@ -193,5 +209,16 @@ public class MQTTClient /*extends AbstractVerticle */{
         	//GUIListenerFunctions.print("++++++ Not connected to MQTTBroker: Data could not be sent");
         	System.err.println("++++++ Not connected to MQTTBroker: Data could not be sent");
         }
+    }
+    
+    public void close () {
+    	if (client!=null) {
+    		if (client.isConnected()) client.disconnect();
+    	}
+    	if (watchdog_running) {
+    		stop_watchdog();
+    		myvertx.close();
+    	}
+    		
     }
 }

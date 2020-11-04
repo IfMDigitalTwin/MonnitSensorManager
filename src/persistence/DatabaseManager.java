@@ -1,150 +1,107 @@
 package persistence;
 
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
-import com.monnit.mine.MonnitMineAPI.enums.eSensorApplication;
+import com.monnit.mine.MonnitMineAPI.Gateway;
+import com.monnit.mine.MonnitMineAPI.Sensor;
 
-import ui.GUIListenerFunctions;
-
-public class DatabaseManager {
-	private static String TBL_LOCATION = "Location";
-	private static String TBL_OBJECT = "RTSD-Object";
-	private static String TBL_GATEWAY = "RTSD-Gateway";
-    private static String TBL_SENSOR = "RTSD-Sensor";
-    private static String TBL_READING = "RTSD-Reading";
-    private MySQLManager mysqlClient;
-    
-	public DatabaseManager() {
-		mysqlClient = new MySQLManager();
+public class DatabaseManager implements iDatabaseManager {
+	private iDatabaseManager _dbManager;
+	
+	public DatabaseManager (String dbtype) {
+		switch (dbtype) {
+			case iDatabaseManager.DB_JSON:
+				_dbManager = new DatabaseManagerJSON();
+				break;
+			case iDatabaseManager.DB_SQL:
+				_dbManager = new DatabaseManagerSQL();
+				break;
+			default:
+				_dbManager = new DatabaseManagerJSON();
+				break;
+		}
 	}
-	
-	public void insertGateway(String gatewayId, int locationId, String type) {
-		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String timestamp = sdf.format(calendar.getTime());
-		
-		String [] colarray = {"GatewayId", "Timestamp", "LocationId", "Type"};
-		String [] valarray = {gatewayId, timestamp, ""+locationId, type};
-		List<String> columns = Arrays.asList(colarray);
-		List<String> values = Arrays.asList(valarray);
-		
-		try {
-			mysqlClient.insert(TBL_GATEWAY, columns, values);
-			GUIListenerFunctions.print("Gateway " + gatewayId + " inserted.");
-		} catch (SQLException e) {
-			GUIListenerFunctions.print("Gateway not inserted. Error: " + e.getMessage());
-		}
-    }
-	
-	public void updateGateway(String gatewayId, int locationId, String type) {
-		/*TODO
-		 * 
-		 * Calendar calendar = Calendar.getInstance();
-		 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String timestamp = sdf.format(calendar.getTime());
-		
-		String [] colarray = {"GatewayId", "Timestamp", "LocationId", "Type"};
-		String [] valarray = {gatewayId, timestamp, ""+locationId, type};
-		List<String> columns = Arrays.asList(colarray);
-		List<String> values = Arrays.asList(valarray);
-		
-		try {
-			mysqlClient.insert(TBL_GATEWAY, columns, values);
-			GUIListenerFunctions.print("Gateway " + gatewayId + " inserted.");
-		} catch (SQLException e) {
-			GUIListenerFunctions.print("Gateway not inserted. Error: " + e.getMessage());
-		}
-		
-		*/
-    }
-	
+
+	@Override
+	public Gateway getGateway(String gatewayId) {
+		return _dbManager.getGateway(gatewayId);
+	}
+
+	@Override
+	public List<Gateway> getAllGateways() {
+		return _dbManager.getAllGateways();
+	}
+
+	@Override
+	public void insertGateway(String gatewayId, long locationId, String type) {
+		_dbManager.insertGateway(gatewayId, locationId, type);
+	}
+
+	@Override
+	public void updateGateway(String gatewayId, long locationId, String type) {
+		_dbManager.updateGateway(gatewayId, locationId, type);
+	}
+
+	@Override
+	public Sensor getSensor(String sensorId) {
+		return _dbManager.getSensor(sensorId);
+	}
+
+	@Override
+	public List<Sensor> getAllSensors() {
+		return _dbManager.getAllSensors();
+	}
+
+	@Override
+	public List<Sensor> getGatewaySensors(String gatewayID) {
+		return _dbManager.getGatewaySensors(gatewayID);
+	}
+
+	@Override
 	public void deleteGateway(String gatewayId) {
-		mysqlClient.delete(TBL_GATEWAY, "GatewayId", gatewayId);
-		GUIListenerFunctions.print("Gateway " + gatewayId + " removed.");
+		_dbManager.deleteGateway(gatewayId);
 	}
-	
-	public void insertSensor(String sensorId, String description, int gatewayId, int locationId, int objectId, String unit) {
-		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");		
-		String timestamp = sdf.format(calendar.getTime());
-		
-		String [] colarray = {"SensorId", "Timestamp", "Description", "GatewayId", "LocationId", "ObjectId", "Unit"};
-		String [] valarray = {sensorId, timestamp, description, "" + gatewayId, ""+locationId, ""+objectId, unit};
-		List<String> columns = Arrays.asList(colarray);
-		List<String> values = Arrays.asList(valarray);
-		
-		try {
-			mysqlClient.insert(TBL_SENSOR, columns, values);
-			GUIListenerFunctions.print("Sensor " + sensorId + " inserted.");
-		} catch (SQLException e) {
-			GUIListenerFunctions.print("Sensor not inserted. Error: " + e.getMessage());
-		}
-    }
-	
-	public void updateSensor(String sensorId, String description, int gatewayId, int locationId, int objectId, String unit) {
-		/* TODO
-		 * 
-		 
-		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");		
-		String timestamp = sdf.format(calendar.getTime());
-		
-		String [] colarray = {"SensorId", "Timestamp", "Description", "GatewayId", "LocationId", "ObjectId", "Unit"};
-		String [] valarray = {sensorId, timestamp, description, "" + gatewayId, ""+locationId, ""+objectId, unit};
-		List<String> columns = Arrays.asList(colarray);
-		List<String> values = Arrays.asList(valarray);
-		
-		try {
-			mysqlClient.insert(TBL_SENSOR, columns, values);
-			GUIListenerFunctions.print("Sensor " + sensorId + " inserted.");
-		} catch (SQLException e) {
-			GUIListenerFunctions.print("Sensor not inserted. Error: " + e.getMessage());
-		}
-		*/
-    }
-	
+
+	@Override
+	public void insertSensor(String sensorId, String description, String gatewayId, long locationId, long objectId,
+			String unit) {
+		_dbManager.insertSensor(sensorId, description, gatewayId, locationId, objectId, unit);
+	}
+
+	@Override
+	public void updateSensor(String sensorId, String description, String gatewayId, long locationId, long objectId,
+			String unit) {
+		_dbManager.updateSensor(sensorId, description, gatewayId, locationId, objectId, unit);
+	}
+
+	@Override
 	public void deleteSensor(String sensorId) {
-		mysqlClient.delete(TBL_SENSOR, "SensorId", sensorId);
-		GUIListenerFunctions.print("Sensor " + sensorId + " removed.");
+		_dbManager.deleteSensor(sensorId);
+	}
+
+	@Override
+	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength,
+			String value, String arrived_to_DTSM) {
+		_dbManager.insertReading(sensorId, msgtimestamp, description, signalStrength, value, arrived_to_DTSM);
+	}
+
+	@Override
+	public long getLocationId(String locationName) {
+		return _dbManager.getLocationId(locationName);
+	}
+
+	@Override
+	public long getObjectId(String objectName) {
+		return _dbManager.getObjectId(objectName);
 	}
 	
-	public void insertReading(String sensorId, String timestamp, String description, String signalStrength, String value) {
-		String [] colarray = {"SensorId", "Timestamp", "Description", "SignalStrength", "Value"};
-		String [] valarray = {sensorId, timestamp, description, signalStrength, value};
-		List<String> columns = Arrays.asList(colarray);
-		List<String> values = Arrays.asList(valarray);
-		
-		try {
-			mysqlClient.insert(TBL_READING, columns, values);
-			GUIListenerFunctions.print("Reading " + colarray + " inserted.");
-		} catch (SQLException e) {
-			GUIListenerFunctions.print("Reading not inserted. Error: " + e.getMessage());
-		}
-    }
-
-	public int getLocationId(String locationName) {
-		int location = -1;
-		List<HashMap<String, String>> locationsList = mysqlClient.selectByIdentifier(TBL_LOCATION, "LocationName", locationName);
-		if(locationsList.size()==1) {
-			location = Integer.parseInt(locationsList.get(0).get("LocationId"));
-		}
-		return location;
-	}
-
-	public int getObjectId(String objectName) {
-		int object = -1;
-		List<HashMap<String, String>> objectsList = mysqlClient.selectByIdentifier(TBL_OBJECT, "ObjectName", objectName);
-		if(objectsList.size()==1) {
-			object = Integer.parseInt(objectsList.get(0).get("ObjectId"));
-		}
-		return object;
+	@Override
+	public List<String> getAllLocationsName(){
+		return _dbManager.getAllLocationsName();
 	}
 	
-
+	@Override
+	public List<String> getAllObjectsName(){
+		return _dbManager.getAllObjectsName();
+	}
 }
