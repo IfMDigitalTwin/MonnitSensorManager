@@ -1,0 +1,22 @@
+{
+	"0" : {"locationId" : 0, "locationName" : "Lecture Theather 1"},
+	"1" : {"locationId" : 1, "locationName" : "Lecture Theather 2"},
+	"2" : {"locationId" : 2, "locationName" : "Seminar Room 1"},
+	"3" : {"locationId" : 3, "locationName" : "Seminar Room 2"},
+	"4" : {"locationId" : 4, "locationName" : "Seminar Room 3"},
+	"5" : {"locationId" : 5, "locationName" : "Robot Lab"},
+	"6" : {"locationId" : 6, "locationName" : "Workshop"},
+	"7" : {"locationId" : 7, "locationName" : "Electric Workshop"},
+	"8" : {"locationId" : 8, "locationName" : "Computer Lab"},
+	"9" : {"locationId" : 9, "locationName" : "Design Studio"},
+	"10" : {"locationId" : 10, "locationName" : "Plant Room"},
+	"11" : {"locationId" : 11, "locationName" : "DIAL"},
+	"12" : {"locationId" : 12, "locationName" : "Meeting Room 1"},
+	"13" : {"locationId" : 13, "locationName" : "Meeting Room 2"},
+	"14" : {"locationId" : 14, "locationName" : "Meeting Room 3"},
+	"15" : {"locationId" : 15, "locationName" : "Meeting Room 4"},
+	"16" : {"locationId" : 13, "locationName" : "Study Room"},
+	"97" : {"locationId" : 97, "locationName" : "HomeLab NM"},
+	"98" : {"locationId" : 98, "locationName" : "HomeLab XX"},
+	"99" : {"locationId" : 99, "locationName" : "HomeLab JM"}
+}

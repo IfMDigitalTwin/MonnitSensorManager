@@ -1,0 +1,10 @@
+{
+	"0" : {"objectId" : 0, "objectName" : "Environment"},
+	"1" : {"objectId" : 1, "objectName" : "Window"},
+	"2" : {"objectId" : 2, "objectName" : "Pump"},
+	"3" : {"objectId" : 3, "objectName" : "Compressor"},
+	"4" : {"objectId" : 4, "objectName" : "Boiler"},
+	"5" : {"objectId" : 5, "objectName" : "Robotic Arm"},
+	"6" : {"objectId" : 6, "objectName" : "Door"},
+	"7" : {"objectId" : 7, "objectName" : "Fridge"}
+}
