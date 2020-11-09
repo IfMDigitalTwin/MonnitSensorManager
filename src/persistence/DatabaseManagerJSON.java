@@ -1,9 +1,5 @@
 package persistence;
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,7 +16,6 @@ import com.monnit.mine.MonnitMineAPI.enums.eSensorApplication;
 
 
 import ui.GUIListenerFunctions;
-import ui.MainWindow;
 
 public class DatabaseManagerJSON implements iDatabaseManager{
 	//private JSONManager jsonmgr;
@@ -113,10 +108,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	@SuppressWarnings("unchecked")
 	public void insertGateway(String gatewayId, long locationId, String type) {
 		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String datetime = sdf.format(calendar.getTime());
-		Timestamp ts = new Timestamp(calendar.getTimeInMillis());
-		String timestamp = ts.toInstant().toString();
+		String timestamp = "" + calendar.getTimeInMillis() * 1000L;
 		JSONObject gateways = readGatewaysJSON();
 		JSONObject gw = (JSONObject) gateways.get(gatewayId);		
 		
@@ -150,8 +142,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	
 	public Sensor getSensor(String sensorId) {
 		Sensor s = null;
-		JSONObject sensors = readSensorsJSON();
-		JSONObject sensor = (JSONObject) sensors.get(sensorId);
+		JSONObject sensor = getSensorJSON(sensorId);
 		
 		if (sensor!=null) {
 			// inside the sensor
@@ -161,6 +152,12 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 			s = sensorValidator(id, application, firmware);
 		}
 		return s;
+	}
+	
+	public JSONObject getSensorJSON(String sensorId) {
+		JSONObject sensors = readSensorsJSON();
+		JSONObject sensor = (JSONObject) sensors.get(sensorId);
+		return sensor;
 	}
 	
 	public List<Sensor> getAllSensors(){
@@ -216,10 +213,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	
 	public void insertSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit) {
 		Calendar calendar = Calendar.getInstance();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String datetime = sdf.format(calendar.getTime());
-		Timestamp ts = new Timestamp(calendar.getTimeInMillis());
-		String timestamp = ts.toInstant().toString();
+		String timestamp = "" + calendar.getTimeInMillis() * 1000L;
 		JSONObject sensors = readSensorsJSON();
 		JSONObject s = (JSONObject) sensors.get(sensorId);		
 		
@@ -235,7 +229,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		smap.put("description", description);
 		smap.put("gatewayId", gatewayId);
 		smap.put("locationId", locationId);
-		smap.put("ObjectId", objectId);
+		smap.put("objectId", objectId);
 		smap.put("unit", unit);
 
 		
@@ -311,6 +305,17 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		}
 		return locationsList;
 	}
+	
+	public long getSensorLocation (String sensorId) {
+		long location = -1;
+		JSONObject sensor = getSensorJSON(sensorId);
+			
+		if (sensor!=null) {
+			// inside the sensor
+			location = (long) sensor.get("locationId");
+		}
+		return location;
+	}
 
 	public long getObjectId(String objectName) {
 		long object = -1;
@@ -348,10 +353,20 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		}
 		return objectsList;
 	}
+	
+	public long getSensorObject (String sensorId) {
+		long location = -1;
+		JSONObject sensor = getSensorJSON(sensorId);
+		if (sensor!=null) {
+			// inside the sensor
+			location = (long) sensor.get("objectId");
+		}
+		return location;
+	}
 
 	@Override
-	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength,
-			String value, String arrived_to_DTSM) {
+	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
+			String monnit_sensormgr_ts, String acp_location, String acp_object) {
 		// TODO Auto-generated method stub
 		// NOT STORED IN LOCAL JSON DB
 	}

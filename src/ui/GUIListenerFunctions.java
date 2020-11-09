@@ -1,8 +1,6 @@
 package ui;
 
 import java.net.*;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -519,33 +517,36 @@ public class GUIListenerFunctions {
 	}
 	
 	public static void insertReadings (List<SensorMessage> sensorMessageList) {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String date = "";
+		String acp_location = "";
+		String acp_object = "";
 		for (SensorMessage msg : sensorMessageList) {
             Sensor sens = null;
 			try {
+				//GUIListenerFunctions.print(msg.toString());
+				System.out.println(msg.toString());
+				
 				sens = FindSensorBySensorID(msg.SensorID);
 				msg.ProfileID = sens.MonnitApplication.Value();
 				Calendar msgcal = msg.getMessageDate();
-				//date = sdf.format(cal.getTime());
-				//Timestamp ts = new Timestamp(msgcal.getTimeInMillis());
-				//date = ts.toInstant().toString();
-				date = msg.getMessageDate().toInstant().toString();
+				date = ""+msgcal.getTimeInMillis()*1000L;
+				acp_location = "" + _dbManager.getSensorLocation(""+msg.SensorID);
+	    		acp_object = "" + _dbManager.getSensorObject(""+msg.SensorID);
+	    		
+	            Calendar calendarSM = Calendar.getInstance();
+	    		String monnit_sensormgr_ts = ""+calendarSM.getTimeInMillis()*1000L;
+	    		
+	            for(Datum d: msg.getData()) {
+	            	_dbManager.insertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_sensormgr_ts, acp_location, acp_object);
+	            	// Reroutes the message to the Real-Time Data Platform in the DIAL Server.
+	            	_dataPlatformManager.InsertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_sensormgr_ts, acp_location, acp_object);
+	            }
 			} catch (InterruptedException | NullPointerException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				System.err.println("---======== Something wrong with: "+ msg.toString() + " -> ");
 				e.printStackTrace();
 			}
-            GUIListenerFunctions.print(msg.toString());
-            Calendar calendarDTSM = Calendar.getInstance();
-    		//String datetimeDTSM = sdf.format(calendarDTSM.getTime());
-    		Timestamp tsDTSM = new Timestamp(calendarDTSM.getTimeInMillis());
-    		String arrived_to_DTSM = tsDTSM.toInstant().toString();
-            for(Datum d: msg.getData()) {
-            	_dbManager.insertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), d.Data.toString(), arrived_to_DTSM);
-            	// Reroutes the message to the Real-Time Data Platform in the DIAL Server.
-            	_dataPlatformManager.InsertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), d.Data.toString(), arrived_to_DTSM);
-            }
+            
 		}
 	}
 	

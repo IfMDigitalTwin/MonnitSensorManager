@@ -244,9 +244,10 @@ public class DatabaseManagerSQL implements iDatabaseManager{
 		GUIListenerFunctions.print("Sensor " + sensorId + " removed.");
 	}
 	
-	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength, String value, String arrived_to_DTSM) {
-		String [] colarray = {"SensorId", "Timestamp", "Description", "SignalStrength", "Value", "Arrived2DTSM"};
-		String [] valarray = {sensorId, msgtimestamp, description, signalStrength, value, arrived_to_DTSM};
+	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
+			String monnit_sensormgr_ts, String acp_location, String acp_object) {
+		String [] colarray = {"monnit_sensor_id", "monnit_ts", "monnit_sensor_type", "monnit_signalstrength", "monnit_voltage", "monnit_value", "monnit_sensormgr_ts", "acp_location", "acp_object"};
+		String [] valarray = {monnit_sensor_id, monnit_ts, monnit_sensor_type, monnit_signalstrength, monnit_voltage, monnit_value, monnit_sensormgr_ts, acp_location, acp_object};
 		List<String> columns = Arrays.asList(colarray);
 		List<String> values = Arrays.asList(valarray);
 		
@@ -291,6 +292,18 @@ public class DatabaseManagerSQL implements iDatabaseManager{
 	public List<String> getAllLocationsName() {
 		// TODO
 		return null;
+	}
+
+	@Override
+	public long getSensorLocation(String sensorId) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public long getSensorObject(String sensorId) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 

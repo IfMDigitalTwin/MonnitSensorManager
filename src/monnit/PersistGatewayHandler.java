@@ -4,7 +4,7 @@ import com.monnit.mine.MonnitMineAPI.Gateway;
 import com.monnit.mine.MonnitMineAPI.iPersistGatewayHandler;
 
 import io.ExternalDeviceStorageHandler;
-import persistence.DatabaseManager;
+import persistence.DatabaseManagerSQL;
 import ui.GUIListenerFunctions;
 
 public class PersistGatewayHandler implements iPersistGatewayHandler {

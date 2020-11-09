@@ -37,7 +37,7 @@ public class JSONManager {
 	public static void writeJSON(JSONObject jsonobj, String destination){
         FileWriter file;
         try {
-        	file = new FileWriter(destination + ".json");
+        	file = new FileWriter(destination);
             file.write(jsonobj.toJSONString());
             file.close();
         } catch (IOException e) {

@@ -5,16 +5,15 @@
 	<classpathentry kind="lib" path="dist/lib/bcprov-jdk15to18-164.jar"/>
 	<classpathentry kind="lib" path="dist/lib/MineLibrary.jar"/>
 	<classpathentry kind="lib" path="dist/lib/boon-0.34.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/json-simple-1.1.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/vertx-mqtt-3.9.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/vertx-core-3.9.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/netty-codec-mqtt-4.1.50.Final.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/netty-common-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/netty-handler-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/netty-transport-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/netty-buffer-4.1.48.Final.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/netty-all-4.1.50.Final.jar"/>
-	<classpathentry kind="con" path="org.eclipse.datatools.connectivity.jdt.DRIVERLIBRARY/Amazon SimpleDB Driver Default"/>
-	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/DTSensorManager/dist/lib/mysql-connector-java-8.0.20.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/json-simple-1.1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/vertx-mqtt-3.9.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/vertx-core-3.9.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/netty-codec-mqtt-4.1.50.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/netty-common-4.1.48.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/netty-handler-4.1.48.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/netty-transport-4.1.48.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/netty-buffer-4.1.48.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/netty-all-4.1.50.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Jorge/eclipse-workspace/MonnitSensorManager/dist/lib/mysql-connector-java-8.0.20.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -8,7 +8,8 @@ public class ExceptionHandler implements iExceptionHandler {
 
     @Override
     public void LogException(Exception e) {
-        GUIListenerFunctions.print(e.toString());
+        //GUIListenerFunctions.print(e.toString());
+    	System.out.println("Monnit exception "+ e.getMessage() + " -> ");
         e.printStackTrace();
     }
 }

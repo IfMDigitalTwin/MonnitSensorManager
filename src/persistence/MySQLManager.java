@@ -20,14 +20,15 @@ public class MySQLManager {
 	public MySQLManager() {
 		loadDriver();
 		con = connect();
-		
 	}
 
 	private void loadDriver() {
 		try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
+			//Class.forName("com.mysql.jdbc.Driver").newInstance();  //Deprecated
+			Class.forName("com.mysql.cj.jdbc.Driver").newInstance();
         } catch (Exception e) {
         	GUIListenerFunctions.print("Connection to Database: Failure -> " + e.getMessage());
+        	e.printStackTrace();
         }
 	}
 	
@@ -51,7 +52,7 @@ public class MySQLManager {
 		String host="", port="", db="", user="", pw="";
 		try {
 			JSONObject dbcfg = JSONManager.readJSON("./dist/cfg/db.cfg");
-			host = (String) dbcfg.get("host"); 
+			host = (String) dbcfg.get("host");
 			port = (String) dbcfg.get("port");
 			db = (String) dbcfg.get("db");
 			user = (String) dbcfg.get("user");
@@ -71,12 +72,12 @@ public class MySQLManager {
 	}
 	
 	public List<HashMap<String, String>> selectByIdentifier (String Table, String idcolumn, String idvalue) {
-		String query = "SELECT * FROM " + Table + " WHERE " + idcolumn + " = " + idvalue + ";";
+		String query = "SELECT * FROM imonnit.`" + Table + "` WHERE " + idcolumn + " = " + idvalue + ";";
 		return select (query);
 	}
 	
 	public List<HashMap<String, String>> selectAll (String Table) {
-		String query = "SELECT * FROM " + Table + ";";
+		String query = "SELECT * FROM imonnit.`" + Table + "`;";
 		return select (query);
 	}
 	
@@ -159,11 +160,13 @@ public class MySQLManager {
 		Statement stmt = null;
 		try {
 			stmt = con.createStatement();
-			
+			GUIListenerFunctions.print("Statement " + stmt);
 			if (stmt.execute(query)) {
 		        rs = stmt.getResultSet();
 		    }
 		} catch (SQLException e) {
+			GUIListenerFunctions.print("Failed to execute the query: " + query + ", SQL Error: " + e.getMessage());
+		} catch (Exception e) {
 			GUIListenerFunctions.print("Failed to execute the query: " + query + ", Error: " + e.getMessage());
 		} finally {
 		    if (rs != null) {

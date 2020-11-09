@@ -37,7 +37,8 @@ public interface iDatabaseManager {
 	
 	public void deleteSensor(String sensorId);
 	
-	public void insertReading(String sensorId, String msgtimestamp, String description, String signalStrength, String value, String arrived_to_DTSM);
+	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
+			String monnit_sensormgr_ts, String acp_location, String acp_object);
 
 	public long getLocationId(String locationName) ;
 
@@ -46,4 +47,7 @@ public interface iDatabaseManager {
 	public List<String> getAllObjectsName();
 	
 	public List<String> getAllLocationsName();
+
+	public long getSensorLocation(String sensorId);
+	public long getSensorObject(String sensorId);
 }

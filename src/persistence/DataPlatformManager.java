@@ -3,21 +3,17 @@ package persistence;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PfxOptions;
-import io.vertx.mqtt.MqttClient;
 import io.vertx.mqtt.MqttClientOptions;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttServerOptions;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import ui.GUIListenerFunctions;
-import ui.MainWindow;
 
 /***
  * Author : Jorge Merino jm2210@cam.ac.uk
@@ -34,7 +30,6 @@ public class DataPlatformManager {
 	public static final int encrypted_port = 8883;
 	public static final String MQTT_TOPIC = "csn/";
 	public static final String MQTT_HOST = "localhost";
-	//private MqttClient mqttcli;
 	private MQTTClient mqttclient; 
 	private MqttClientOptions mqttcliopt;
 	private MqttServer mqttsrv;
@@ -98,70 +93,8 @@ public class DataPlatformManager {
 	}
 	
 	private void DataPlatFormManagerUnencryptedCli(String clientId, String password, String brokerIP) {
-
 		mqttclient = new MQTTClient();
-		
 	}
-	/*
-	private void DataPlatFormManagerUnencrypted(String clientId, String password, String brokerIP) {
-		GUIListenerFunctions.print("Connecting as Client without certificate. Basic Username + Password method");
-		/*
-		Client cli = new Client();
-		try {
-			cli.start();
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}* /
-		Vertx vertx = Vertx.vertx();
-		
-		mqttcliopt = new MqttClientOptions();
-		mqttcliopt.setClientId(clientId);
-		mqttcliopt.setPassword(password);
-		//mqttcliopt.setAutoKeepAlive(true);
-		mqttcli = MqttClient.create(vertx, mqttcliopt);
-		
-		mqttcli.publishHandler( s -> {
-			/*try {* /
-				//String message = new String(s.payload().getBytes(), "UTF-8");
-				String message = s.payload().toString(Charset.defaultCharset());
-				GUIListenerFunctions.print("Message published to MQTT Broker: " + brokerIP + s.topicName() + " -> Message: " + message);
-			/*} catch (UnsupportedEncodingException e) {
-				System.out.println("Error while handling the message: ");
-				e.printStackTrace();
-			}* /
-    	});
-		
-		// handle response on subscribe request
-	    mqttcli.subscribeCompletionHandler(h -> {
-	      System.out.println("Receive SUBACK from server with granted QoS : " + h.grantedQoSLevels());
-	      /*
-	      // let's publish a message to the subscribed topic
-	      mqttcli.publish(
-	        MQTT_TOPIC,
-	        Buffer.buffer("Hello Vert.x MQTT Client"),
-	        MqttQoS.AT_MOST_ONCE,
-	        false,
-	        false,
-	        s -> System.out.println("Publish sent to a server"));
-	       * /
-	      // unsubscribe from receiving messages for earlier subscribed topic
-	      // vertx.setTimer(5000, l -> mqttcli.unsubscribe(MQTT_TOPIC));
-	    });
-
-	    // handle response on unsubscribe request
-	    mqttcli.unsubscribeCompletionHandler(h -> {
-	      System.out.println("Receive UNSUBACK from server");
-	      vertx.setTimer(5000, l ->
-	        // disconnect for server
-	        mqttcli.disconnect(d -> System.out.println("Disconnected form server"))
-	      );
-	    });
-		
-        connect(DataPlatformManager.unencrypted_port, brokerIP);
-		//connect(DataPlatformManager.unencrypted_port, "localhost");
-	}*/
 	
 	private void DataPlatformManagerEncrypted(String clientId, String password, String brokerIP) {
 		GUIListenerFunctions.print("Connecting with certificate. Encryption method");
@@ -182,23 +115,7 @@ public class DataPlatformManager {
 		//mqttcli = MqttClient.create(vertx, mqttcliopt);
         //connect(DataPlatformManager.encrypted_port, brokerIP);	
 	}
-	/*
-	private void connect(int port, String host){
-		GUIListenerFunctions.print("Connecting to MQTT broker " + brokerIP + "...");
-		mqttcli.connect(port, host, s -> {
-			GUIListenerFunctions.print("HERE");
-			if (s.succeeded()) {
-				GUIListenerFunctions.print("Connection : " + s.toString());
-				//fakeReading("TESTVALUE");
-			} else {
-				GUIListenerFunctions.print("Connection : " + s.cause().getMessage());
-			}
-			mqttcli.subscribe(MQTT_TOPIC, 0);
-			//fakeReading("TEST 2");
-	    });
-		//GUIListenerFunctions.print("Finished METHOD CONNECT. Connected: " + mqttcli.isConnected());
-	}
-*/
+
     private void publish(String topic, String message){
     	if(mqttclient!=null) {
     		mqttclient.publish(topic, message);
@@ -238,16 +155,23 @@ public class DataPlatformManager {
         }
     }
     */
-    public void InsertReading(String sensorid, String msgtimestamp, String type, String signalstrength, String value, String arrived_to_DTSM){
-        String acp_id = "monnit-"+type+"-"+sensorid;
+    public void InsertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
+    		String monnit_sensormgr_ts, String acp_location, String acp_object){
+        String acp_id = "monnit-"+monnit_sensor_type+"-"+monnit_sensor_id;
+        String acp_ts = (!monnit_ts.equals("")?monnit_ts:monnit_sensormgr_ts);
+        
     	String message = "{" + 
-            "\"msg_ts\":" + "\"" + msgtimestamp + "\"," +
-            "\"sensor_id\":" + "\"" + sensorid + "\"," +
-            "\"signalStrength\":" + "\"" + signalstrength + "\"," +
-            "\"value\":" + "\"" + value + "\"," +
-            "\"type\":" + "\"" + type + "\"" +
-            "\"dtsm_ts\":" + "\"" + arrived_to_DTSM + "\"" +
-            "\"acp_id\":" + "\"" + acp_id +  "\"" +
+            "\"monnit_ts\":" + "\"" + monnit_ts + "\"," +
+            "\"monnit_sensor_id\":" + "\"" + monnit_sensor_id + "\"," +
+            "\"monnit_signalstrength\":" + "\"" + monnit_signalstrength + "\"," +
+            "\"monnit_signalstrength\":" + "\"" + monnit_voltage + "\"," +
+            "\"monnit_value\":" + "\"" + monnit_value + "\"," +
+            "\"monnit_sensor_type\":" + "\"" + monnit_sensor_type + "\"," +
+            "\"monnit_sensormgr_ts\":" + "\"" + monnit_sensormgr_ts + "\"," +
+            "\"acp_id\":" + "\"" + acp_id +  "\"," +
+            "\"acp_ts\":" + "\"" + acp_ts +  "\"," +
+            "\"acp_location\":" + "\"" + acp_location +  "\"" +
+            "\"acp_object\":" + "\"" + acp_object +  "\"," +
             "}";
         String topic = GUIListenerFunctions.getTopicPrefix() + acp_id + "/monnit";
         
@@ -255,7 +179,7 @@ public class DataPlatformManager {
     }
     
     public void fakeReading(String value) {
-		InsertReading("ID01234", "yyyy-MM-dd HH:mm", "TypeTest", "100", value, "yyyy-MM-dd HH:mm");
+		InsertReading("FAKE", "yyyy-MM-dd HH:mm", "TypeTest", "100", "5", value, "yyyy-MM-dd HH:mm", "NOWHERE", "THEVOID");
 	}
 
 	public void stop() {

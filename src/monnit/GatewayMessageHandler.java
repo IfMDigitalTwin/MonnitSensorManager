@@ -10,6 +10,7 @@ public class GatewayMessageHandler implements iGatewayMessageHandler {
     @Override
     public void ProcessGatewayMessage(GatewayMessage gatewayMessage)
             throws Exception {
-        GUIListenerFunctions.print(gatewayMessage.toString());
+        //GUIListenerFunctions.print("____Gateway Message: " + gatewayMessage.toString());
+    	System.out.println("____Gateway Message: " + gatewayMessage.toString());
     }
 }

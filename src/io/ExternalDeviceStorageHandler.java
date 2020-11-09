@@ -6,27 +6,27 @@ import com.monnit.mine.MonnitMineAPI.Sensor;
 import com.monnit.mine.MonnitMineAPI.iExternalDeviceStorage;
 
 import persistence.DataPlatformManager;
-import persistence.DatabaseManager;
+import persistence.iDatabaseManager;
 
 import java.util.ArrayList;
 
 public class ExternalDeviceStorageHandler implements iExternalDeviceStorage {
     
-	private DatabaseManager dbManager;
+	private iDatabaseManager dbManager;
 	private DataPlatformManager dataPlatformManager;
 	
-	public ExternalDeviceStorageHandler (DatabaseManager dbManager, DataPlatformManager dataPlatformManager) {
-		this.dbManager = dbManager;
+	public ExternalDeviceStorageHandler (iDatabaseManager _dbManager, DataPlatformManager dataPlatformManager) {
+		this.dbManager = _dbManager;
 		this.dataPlatformManager = dataPlatformManager;
 	}
 	
 	
-    public DatabaseManager getDbManager() {
+    public iDatabaseManager getDbManager() {
 		return dbManager;
 	}
 
 
-	public void setDbManager(DatabaseManager dbManager) {
+	public void setDbManager(iDatabaseManager dbManager) {
 		this.dbManager = dbManager;
 	}
 
@@ -43,9 +43,7 @@ public class ExternalDeviceStorageHandler implements iExternalDeviceStorage {
 
 	@Override
     public Gateway FindGateway(long gatewayID) {
-        Gateway gateway = null;
-        
-        return gateway;
+        return dbManager.getGateway(""+gatewayID);
     }
 
     @Override
