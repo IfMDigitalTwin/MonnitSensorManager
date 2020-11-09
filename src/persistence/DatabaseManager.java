@@ -63,15 +63,15 @@ public class DatabaseManager implements iDatabaseManager {
 	}
 
 	@Override
-	public void insertSensor(String sensorId, String description, String gatewayId, long locationId, long objectId,
+	public void insertSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId,
 			String unit) {
-		_dbManager.insertSensor(sensorId, description, gatewayId, locationId, objectId, unit);
+		_dbManager.insertSensor(sensorId, monnit_sensor_type, gatewayId, locationId, objectId, unit);
 	}
 
 	@Override
-	public void updateSensor(String sensorId, String description, String gatewayId, long locationId, long objectId,
+	public void updateSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId,
 			String unit) {
-		_dbManager.updateSensor(sensorId, description, gatewayId, locationId, objectId, unit);
+		_dbManager.updateSensor(sensorId, monnit_sensor_type, gatewayId, locationId, objectId, unit);
 	}
 
 	@Override

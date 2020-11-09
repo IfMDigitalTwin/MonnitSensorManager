@@ -199,13 +199,13 @@ public class DatabaseManagerSQL implements iDatabaseManager{
 		GUIListenerFunctions.print("Gateway " + gatewayId + " removed.");
 	}
 	
-	public void insertSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit) {
+	public void insertSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit) {
 		Calendar calendar = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");		
 		String timestamp = sdf.format(calendar.getTime());
 		
-		String [] colarray = {"SensorId", "Timestamp", "Description", "GatewayId", "LocationId", "ObjectId", "Unit"};
-		String [] valarray = {sensorId, timestamp, description, "" + gatewayId, ""+locationId, ""+objectId, unit};
+		String [] colarray = {"SensorId", "Timestamp", "monnit_sensor_type", "GatewayId", "LocationId", "ObjectId", "Unit"};
+		String [] valarray = {sensorId, timestamp, monnit_sensor_type, "" + gatewayId, ""+locationId, ""+objectId, unit};
 		List<String> columns = Arrays.asList(colarray);
 		List<String> values = Arrays.asList(valarray);
 		
@@ -217,7 +217,7 @@ public class DatabaseManagerSQL implements iDatabaseManager{
 		}
     }
 	
-	public void updateSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit) {
+	public void updateSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit) {
 		/* TODO
 		 * 
 		 
@@ -225,8 +225,8 @@ public class DatabaseManagerSQL implements iDatabaseManager{
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");		
 		String timestamp = sdf.format(calendar.getTime());
 		
-		String [] colarray = {"SensorId", "Timestamp", "Description", "GatewayId", "LocationId", "ObjectId", "Unit"};
-		String [] valarray = {sensorId, timestamp, description, "" + gatewayId, ""+locationId, ""+objectId, unit};
+		String [] colarray = {"SensorId", "Timestamp", "monnit_sensor_type", "GatewayId", "LocationId", "ObjectId", "Unit"};
+		String [] valarray = {sensorId, timestamp, monnit_sensor_type, "" + gatewayId, ""+locationId, ""+objectId, unit};
 		List<String> columns = Arrays.asList(colarray);
 		List<String> values = Arrays.asList(valarray);
 		

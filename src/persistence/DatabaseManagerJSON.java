@@ -211,7 +211,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		return s;
 	}
 	
-	public void insertSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit) {
+	public void insertSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit) {
 		Calendar calendar = Calendar.getInstance();
 		String timestamp = "" + calendar.getTimeInMillis() * 1000L;
 		JSONObject sensors = readSensorsJSON();
@@ -226,7 +226,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		}	
 		smap.put("sensorId", sensorId);
 		smap.put("last_update", timestamp);
-		smap.put("description", description);
+		smap.put("monnit_sensor_type", monnit_sensor_type);
 		smap.put("gatewayId", gatewayId);
 		smap.put("locationId", locationId);
 		smap.put("objectId", objectId);
@@ -238,8 +238,8 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		GUIListenerFunctions.print("[DB JSON:: Sensor "+ sensorId +" inserted]");
     }
 	
-	public void updateSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit) {
-		this.insertSensor(sensorId, description, gatewayId, locationId, objectId, unit);
+	public void updateSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit) {
+		this.insertSensor(sensorId, monnit_sensor_type, gatewayId, locationId, objectId, unit);
     }
 	
 	public void deleteSensor(String sensorId) {
@@ -260,7 +260,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 			String gwid = (String) sensor.get("gatewayId");
 			if (gwid.equals(gatewayID)) {
 				String id=(String) sensor.get("sensorId");
-				String application = (String) sensor.get("description");
+				String application = (String) sensor.get("monnit_sensor_type");
 				String firmware = (String) sensor.get("firmware");
 				Sensor s = sensorValidator(id, application, firmware);
 				if (s!=null) sensorsList.add(s);	

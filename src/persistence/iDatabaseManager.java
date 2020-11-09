@@ -32,9 +32,9 @@ public interface iDatabaseManager {
 	
 	public void deleteGateway(String gatewayId);
 	
-	public void insertSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit);
+	public void insertSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit);
 	
-	public void updateSensor(String sensorId, String description, String gatewayId, long locationId, long objectId, String unit) ;
+	public void updateSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit) ;
 	
 	public void deleteSensor(String sensorId);
 	

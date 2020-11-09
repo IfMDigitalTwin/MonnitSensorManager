@@ -293,7 +293,8 @@ public class GUIListenerFunctions {
                 */
                 _Server.RegisterGateway(MineGateway);
                 print("GatewayID " + GatewayID + " has been registered");
-                _dbManager.insertGateway(""+GatewayID, _dbManager.getLocationId((String) MainWindow.gatewayLocationDropdown.getSelectedItem()), GatewayType.toString());
+                long locationId = _dbManager.getLocationId((String) MainWindow.gatewayLocationDropdown.getSelectedItem());
+                _dbManager.insertGateway(""+GatewayID, locationId, GatewayType.toString());
             } catch(Exception ex) {
                 print("Problem registering the gateway: " + ex.getMessage());
             }
@@ -430,8 +431,9 @@ public class GUIListenerFunctions {
 				Sensor MineSensor = new Sensor(SensorID, SensorApplication, "2.3.0.0", firmwaregen);
 				_Server.RegisterSensor(GatewayID, MineSensor);
 				print("SensorID " + SensorID + " has been registered to Gateway " + GatewayID);
-				
-				_dbManager.insertSensor(""+SensorID, SensorApplication.toString(), ""+GatewayID, _dbManager.getObjectId((String) MainWindow.sensorLocationDropdown.getSelectedItem()), _dbManager.getObjectId((String) MainWindow.objectDropdown.getSelectedItem()), getUnitForSensorApp(SensorApplication));
+				long locationId = _dbManager.getLocationId((String) MainWindow.sensorLocationDropdown.getSelectedItem());
+				long objectId = _dbManager.getObjectId((String) MainWindow.objectDropdown.getSelectedItem());
+				_dbManager.insertSensor(""+SensorID, SensorApplication.toString(), ""+GatewayID, locationId, objectId, getUnitForSensorApp(SensorApplication));
 			 } catch(Exception ex) {
 				 print("Sensor registering failed: " + ex.getMessage());
 	         }
@@ -529,17 +531,14 @@ public class GUIListenerFunctions {
 			try {
 				//GUIListenerFunctions.print(msg.toString());
 				System.out.println(msg.toString());
-				
 				sensorid = ""+msg.SensorID;
 				sens = FindSensorBySensorID(msg.SensorID);
-				
-				msg.ProfileID = sens.MonnitApplication.Value();
+				if(sens!=null) msg.ProfileID = sens.MonnitApplication.Value();
 				Calendar msgcal = msg.getMessageDate();
-				date = ""+msgcal.getTimeInMillis()*1000L;
+				if (msgcal!=null) date = ""+msgcal.getTimeInMillis()*1000L;
 				acp_location = "" + _dbManager.getSensorLocation(sensorid);
 	    		acp_object = "" + _dbManager.getSensorObject(sensorid);
 	    		monnit_gw = _dbManager.getSensorGateway(sensorid);
-	    		
 	            Calendar calendarSM = Calendar.getInstance();
 	    		String monnit_sensormgr_ts = ""+calendarSM.getTimeInMillis()*1000L;
 	    		String dataconnector = ip.getHostAddress().toString();
@@ -549,11 +548,18 @@ public class GUIListenerFunctions {
 	            	_dataPlatformManager.InsertReading(sensorid, date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_gw, dataconnector, monnit_sensormgr_ts, acp_location, acp_object);
 	            }
 			} catch (InterruptedException | NullPointerException | IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				System.err.println("---======== Something wrong with: "+ msg.toString() + " -> ");
-				e.printStackTrace();
+				System.err.println("---===========================================================================---");
+				System.err.println("Something (Controlled) wrong with: "+ msg.toString() + " -> "+ e.getMessage());
+				System.err.println("Sensor"+ msg.SensorID + " is sending data, but maybe not registered?");
+				//e.printStackTrace();
+				System.err.println("---===========================================================================---");
+			} catch (Exception e) {
+				System.err.println("---===========================================================================---");
+				System.err.println("Something wrong with: "+ msg.toString() + " -> "+ e.getMessage());
+				System.err.println("Check whether "+ msg.SensorID + " is of type -> " + sens.MonnitApplication.name());
+				//e.printStackTrace();
+				System.err.println("---===========================================================================---");
 			}
-            
 		}
 	}
 	
