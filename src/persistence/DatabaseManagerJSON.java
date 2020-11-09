@@ -269,6 +269,16 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 		return sensorsList;
 	}
 	
+	public String getSensorGateway (String sensorId) {
+		String gw = "";
+		JSONObject sensor = getSensorJSON(sensorId);
+		if (sensor!=null) {
+			// inside the sensor
+			gw = (String) sensor.get("gatewayId");
+		}
+		return gw;
+	}
+	
 	public long getLocationId(String locationName) {
 		long location = -1;
 		JSONObject locations = readLocationsJSON();
@@ -365,7 +375,7 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	}
 
 	@Override
-	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
+	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, String monnit_gw, String dataconnector,
 			String monnit_sensormgr_ts, String acp_location, String acp_object) {
 		// TODO Auto-generated method stub
 		// NOT STORED IN LOCAL JSON DB

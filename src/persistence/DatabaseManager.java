@@ -80,9 +80,9 @@ public class DatabaseManager implements iDatabaseManager {
 	}
 
 	@Override
-	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
-			String monnit_sensormgr_ts, String acp_location, String acp_object) {
-		_dbManager.insertReading(monnit_sensor_id, monnit_ts, monnit_sensor_type, monnit_signalstrength, monnit_voltage, monnit_value, monnit_sensormgr_ts, acp_location, acp_object);
+	public void insertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, String monnit_gw, 
+			String dataconnector, String monnit_sensormgr_ts, String acp_location, String acp_object) {
+		_dbManager.insertReading(monnit_sensor_id, monnit_ts, monnit_sensor_type, monnit_signalstrength, monnit_voltage, monnit_value, monnit_gw, dataconnector, monnit_sensormgr_ts, acp_location, acp_object);
 	}
 
 	@Override
@@ -113,6 +113,11 @@ public class DatabaseManager implements iDatabaseManager {
 	@Override
 	public long getSensorObject(String sensorId) {
 		return _dbManager.getSensorObject(sensorId);
+	}
+
+	@Override
+	public String getSensorGateway(String sensorId) {
+		return _dbManager.getSensorGateway(sensorId);
 	}
 	
 	

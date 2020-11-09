@@ -43,6 +43,8 @@ public class GUIListenerFunctions {
     private static boolean serverMode;
     private static boolean encrypted;
     private static boolean MonnitServerStarted;
+    private static InetAddress ip;
+    private static int port;
 
     public static synchronized void print(String s) {
         MainWindow.println(s);
@@ -155,7 +157,7 @@ public class GUIListenerFunctions {
         	MainWindow.println("------> Monnit Server is already running!");
         	return;
         }
-    	int port = getPort();
+    	port = getPort();
         if (port < 1) {
             MainWindow.println("Invalid Port Number.");
             return;
@@ -168,7 +170,7 @@ public class GUIListenerFunctions {
             return;
         }
 
-        InetAddress ip = InetAddress.getByName(MainWindow.ipDropdown.getSelectedItem().toString());
+        ip = InetAddress.getByName(MainWindow.ipDropdown.getSelectedItem().toString());
         //stringToByteIP(gui.ipDropdown.getSelectedItem().toString()));
 
         _dataPlatformManager = new DataPlatformManager(serverMode, encrypted);
@@ -518,28 +520,33 @@ public class GUIListenerFunctions {
 	
 	public static void insertReadings (List<SensorMessage> sensorMessageList) {
 		String date = "";
+		String sensorid = "";
 		String acp_location = "";
 		String acp_object = "";
+		String monnit_gw = "";
 		for (SensorMessage msg : sensorMessageList) {
             Sensor sens = null;
 			try {
 				//GUIListenerFunctions.print(msg.toString());
 				System.out.println(msg.toString());
 				
+				sensorid = ""+msg.SensorID;
 				sens = FindSensorBySensorID(msg.SensorID);
+				
 				msg.ProfileID = sens.MonnitApplication.Value();
 				Calendar msgcal = msg.getMessageDate();
 				date = ""+msgcal.getTimeInMillis()*1000L;
-				acp_location = "" + _dbManager.getSensorLocation(""+msg.SensorID);
-	    		acp_object = "" + _dbManager.getSensorObject(""+msg.SensorID);
+				acp_location = "" + _dbManager.getSensorLocation(sensorid);
+	    		acp_object = "" + _dbManager.getSensorObject(sensorid);
+	    		monnit_gw = _dbManager.getSensorGateway(sensorid);
 	    		
 	            Calendar calendarSM = Calendar.getInstance();
 	    		String monnit_sensormgr_ts = ""+calendarSM.getTimeInMillis()*1000L;
-	    		
+	    		String dataconnector = ip.getHostAddress().toString();
 	            for(Datum d: msg.getData()) {
-	            	_dbManager.insertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_sensormgr_ts, acp_location, acp_object);
+	            	_dbManager.insertReading(sensorid, date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_gw, dataconnector, monnit_sensormgr_ts, acp_location, acp_object);
 	            	// Reroutes the message to the Real-Time Data Platform in the DIAL Server.
-	            	_dataPlatformManager.InsertReading(""+msg.getSensorID(), date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_sensormgr_ts, acp_location, acp_object);
+	            	_dataPlatformManager.InsertReading(sensorid, date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_gw, dataconnector, monnit_sensormgr_ts, acp_location, acp_object);
 	            }
 			} catch (InterruptedException | NullPointerException | IllegalArgumentException e) {
 				// TODO Auto-generated catch block
@@ -555,7 +562,7 @@ public class GUIListenerFunctions {
 	}
 	
 	public static void fakeReading() {
-		_dataPlatformManager.fakeReading("TEST_VALUE_FROM_GUI");
+		_dataPlatformManager.fakeReading("TEST_VALUE_FROM_GUI", ip.getHostAddress().toString());
 	}
 
 	public static boolean isMonnitServerStarted() {

@@ -155,8 +155,9 @@ public class DataPlatformManager {
         }
     }
     */
-    public void InsertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, 
-    		String monnit_sensormgr_ts, String acp_location, String acp_object){
+    public void InsertReading(String monnit_sensor_id, String monnit_ts, String monnit_sensor_type, String monnit_signalstrength, String monnit_voltage, String monnit_value, String monnit_gw,
+    		String dataconnector, String monnit_sensormgr_ts, String acp_location, String acp_object){
+    	
         String acp_id = "monnit-"+monnit_sensor_type+"-"+monnit_sensor_id;
         String acp_ts = (!monnit_ts.equals("")?monnit_ts:monnit_sensormgr_ts);
         
@@ -164,10 +165,12 @@ public class DataPlatformManager {
             "\"monnit_ts\":" + "\"" + monnit_ts + "\"," +
             "\"monnit_sensor_id\":" + "\"" + monnit_sensor_id + "\"," +
             "\"monnit_signalstrength\":" + "\"" + monnit_signalstrength + "\"," +
-            "\"monnit_signalstrength\":" + "\"" + monnit_voltage + "\"," +
+            "\"monnit_signalvoltage\":" + "\"" + monnit_voltage + "\"," +
+            "\"monnit_gw\":" + "\"" + monnit_gw + "\"," +
             "\"monnit_value\":" + "\"" + monnit_value + "\"," +
             "\"monnit_sensor_type\":" + "\"" + monnit_sensor_type + "\"," +
             "\"monnit_sensormgr_ts\":" + "\"" + monnit_sensormgr_ts + "\"," +
+            "\"data_connector\":" + "\"" + dataconnector + "\"," +
             "\"acp_id\":" + "\"" + acp_id +  "\"," +
             "\"acp_ts\":" + "\"" + acp_ts +  "\"," +
             "\"acp_location\":" + "\"" + acp_location +  "\"" +
@@ -178,8 +181,8 @@ public class DataPlatformManager {
         publish(topic, message);
     }
     
-    public void fakeReading(String value) {
-		InsertReading("FAKE", "yyyy-MM-dd HH:mm", "TypeTest", "100", "5", value, "yyyy-MM-dd HH:mm", "NOWHERE", "THEVOID");
+    public void fakeReading(String value, String ip) {
+		InsertReading("FAKE", "yyyy-MM-dd HH:mm", "TypeTest", "100", "5", value, "nogw", "yyyy-MM-dd HH:mm", ip, "NOWHERE", "THEVOID");
 	}
 
 	public void stop() {
