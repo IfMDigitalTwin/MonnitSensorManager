@@ -154,12 +154,12 @@ public class GUIListenerFunctions {
 
     public static void startButtonPressed() throws Exception {
         if(MonnitServerStarted) {
-        	MainWindow.println("------> Monnit Server is already running!");
+        	print("------> Monnit Server is already running!");
         	return;
         }
     	port = getPort();
         if (port < 1) {
-            MainWindow.println("Invalid Port Number.");
+            print("Invalid Port Number.");
             return;
         }
         eMineListenerProtocol Protocol;
@@ -226,7 +226,7 @@ public class GUIListenerFunctions {
             }
         }
                 
-        print("Finished all inits");
+        print("++++++++++++++++++ Finished all inits ++++++++++++++++++");
         MonnitServerStarted = true;
         MainWindow.startListenButton.setText("Stop");
         getTopicPrefix();
@@ -234,7 +234,7 @@ public class GUIListenerFunctions {
     
     public static void stopButtonPressed() throws Exception {
         if(!MonnitServerStarted) {
-        	MainWindow.println("------> Monnit Server is NOT running!");
+        	print("------> Monnit Server is NOT running!");
         	return;
         }
         if(_Server!=null) {
@@ -291,6 +291,7 @@ public class GUIListenerFunctions {
                 print("Server Host Address: " + MineGateway.ServerHostAddress + " - " + MineGateway.getServerHostAddress());
                 print("Server Host Address 2: " + MineGateway.ServerHostAddress2 + " - " + MineGateway.getServerHostAddress());
                 */
+                MineGateway.UpdateReportInterval(1);
                 _Server.RegisterGateway(MineGateway);
                 print("GatewayID " + GatewayID + " has been registered");
                 long locationId = _dbManager.getLocationId((String) MainWindow.gatewayLocationDropdown.getSelectedItem());
@@ -306,7 +307,7 @@ public class GUIListenerFunctions {
     {
         if (_Server == null)
         {
-            MainWindow.println("Server not started");
+            print("Server not started");
             return 0;
         }
 
@@ -315,7 +316,7 @@ public class GUIListenerFunctions {
         	GatewayID = Long.parseLong(MainWindow.gatewayIDField.getText());
         }catch(Exception e)
         {
-            MainWindow.println("Invalid GatewayID");
+            print("Invalid GatewayID");
             return 0;
         }
 
@@ -429,6 +430,7 @@ public class GUIListenerFunctions {
 				SensorApplication = eSensorApplication.valueOf(application);
 				
 				Sensor MineSensor = new Sensor(SensorID, SensorApplication, "2.3.0.0", firmwaregen);
+				MineSensor.setReportInterval(1);
 				_Server.RegisterSensor(GatewayID, MineSensor);
 				print("SensorID " + SensorID + " has been registered to Gateway " + GatewayID);
 				long locationId = _dbManager.getLocationId((String) MainWindow.sensorLocationDropdown.getSelectedItem());
@@ -465,7 +467,7 @@ public class GUIListenerFunctions {
     {
         if (_Server == null)
         {
-            MainWindow.println("Server not started");
+            print("Server not started");
             return 0;
         }
 
@@ -474,7 +476,7 @@ public class GUIListenerFunctions {
         	SensorID = Integer.parseInt(MainWindow.sensorIDField.getText());
         }catch(Exception e)
         {
-            MainWindow.println("Invalid SensorID");
+            print("Invalid SensorID");
             return 0;
         }
 
@@ -509,7 +511,7 @@ public class GUIListenerFunctions {
         {
             if (_Server.FindSensor(SensorID) == null)
             {
-                MainWindow.println("SensorID " + SensorID + " has not been registered");
+                print("SensorID " + SensorID + " has not been registered");
             }
             else
             {
@@ -529,18 +531,22 @@ public class GUIListenerFunctions {
 		for (SensorMessage msg : sensorMessageList) {
             Sensor sens = null;
 			try {
-				//GUIListenerFunctions.print(msg.toString());
-				System.out.println(msg.toString());
+				//print(msg.toString());
+				printSensorMessage(msg);
 				sensorid = ""+msg.SensorID;
 				sens = FindSensorBySensorID(msg.SensorID);
 				if(sens!=null) msg.ProfileID = sens.MonnitApplication.Value();
 				Calendar msgcal = msg.getMessageDate();
-				if (msgcal!=null) date = ""+msgcal.getTimeInMillis()*1000L;
+				if (msgcal!=null) {
+					long dated = msgcal.getTimeInMillis();
+					date = dated/1000L + "." + dated%1000L;
+				}
 				acp_location = "" + _dbManager.getSensorLocation(sensorid);
 	    		acp_object = "" + _dbManager.getSensorObject(sensorid);
 	    		monnit_gw = _dbManager.getSensorGateway(sensorid);
 	            Calendar calendarSM = Calendar.getInstance();
-	    		String monnit_sensormgr_ts = ""+calendarSM.getTimeInMillis()*1000L;
+	            long monnit_sensormgr_tsd = calendarSM.getTimeInMillis();
+	    		String monnit_sensormgr_ts = monnit_sensormgr_tsd/1000L + "." + monnit_sensormgr_tsd%1000L;
 	    		String dataconnector = ip.getHostAddress().toString();
 	            for(Datum d: msg.getData()) {
 	            	_dbManager.insertReading(sensorid, date, d.Description, ""+msg.getSignalStrength(), ""+msg.getVoltage(), d.Data.toString(), monnit_gw, dataconnector, monnit_sensormgr_ts, acp_location, acp_object);
@@ -563,6 +569,10 @@ public class GUIListenerFunctions {
 		}
 	}
 	
+	private static void printSensorMessage(SensorMessage msg) {
+		System.out.println("<<<Message received [sensor: " + msg.SensorID + ", application: " + msg.ProfileID + "]>>>");
+	}
+
 	public static MineServer getServer() {
 		return _Server;
 	}

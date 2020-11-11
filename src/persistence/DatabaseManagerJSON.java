@@ -108,7 +108,8 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	@SuppressWarnings("unchecked")
 	public void insertGateway(String gatewayId, long locationId, String type) {
 		Calendar calendar = Calendar.getInstance();
-		String timestamp = "" + calendar.getTimeInMillis() * 1000L;
+		long timestampd = calendar.getTimeInMillis();
+		String timestamp = timestampd/1000L+"."+ timestampd%1000L;
 		JSONObject gateways = readGatewaysJSON();
 		JSONObject gw = (JSONObject) gateways.get(gatewayId);		
 		
@@ -213,7 +214,9 @@ public class DatabaseManagerJSON implements iDatabaseManager{
 	
 	public void insertSensor(String sensorId, String monnit_sensor_type, String gatewayId, long locationId, long objectId, String unit) {
 		Calendar calendar = Calendar.getInstance();
-		String timestamp = "" + calendar.getTimeInMillis() * 1000L;
+		long timestampd = calendar.getTimeInMillis();
+		String timestamp = timestampd/1000L+"."+ timestampd%1000L;
+		//GUIListenerFunctions.print("Here: " + timestampd + " - " + timestamp);
 		JSONObject sensors = readSensorsJSON();
 		JSONObject s = (JSONObject) sensors.get(sensorId);		
 		

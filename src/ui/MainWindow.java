@@ -613,15 +613,7 @@ public class MainWindow {
     }
 
     public static void println(String s) {
-        String [] data_array = outputArea.getText().split("\n");
-        String data="";
-        for(int i=1; i < Math.min(data_array.length, FEED_MAX_SIZE) ; i++) {
-        	// data = data_array[data_array.length-i] + "\n" + data; //reverse
-        	data += "\n" + data_array[data_array.length-i];
-        }
-    	data = data + "\n" + s;
-    	// data = s + "\n" + data; //reverse
-        outputArea.setText(data);
+        outputArea.append(s+"\n");
     }
 
     public static void clearOutput() {

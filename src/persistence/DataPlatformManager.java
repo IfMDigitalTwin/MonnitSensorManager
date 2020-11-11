@@ -173,8 +173,8 @@ public class DataPlatformManager {
             "\"data_connector\":" + "\"" + dataconnector + "\"," +
             "\"acp_id\":" + "\"" + acp_id +  "\"," +
             "\"acp_ts\":" + "\"" + acp_ts +  "\"," +
-            "\"acp_location\":" + "\"" + acp_location +  "\"," +
-            "\"acp_object\":" + "\"" + acp_object +  "\"" +
+            "\"acp_ifc_location\":" + "\"" + acp_location +  "\"," +
+            "\"acp_ifc_object\":" + "\"" + acp_object +  "\"" +
             "}";
         String topic = GUIListenerFunctions.getTopicPrefix() + acp_id + "/monnit";
         
